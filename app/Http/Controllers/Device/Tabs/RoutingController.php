@@ -15,10 +15,10 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
- * @package    LibreNMS
- * @link       http://librenms.org
+ * @link       https://www.librenms.org
+ *
  * @copyright  2020 Tony Murray
  * @author     Tony Murray <murraytony@gmail.com>
  */
@@ -37,8 +37,10 @@ class RoutingController implements DeviceTab
     public function __construct()
     {
         $device = DeviceCache::getPrimary();
+        //dd($device);
         $this->tabs = [
             'ospf' => $device->ospfInstances()->count(),
+            'isis' => $device->isisAdjacencies()->count(),
             'bgp' => $device->bgppeers()->count(),
             'vrf' => $device->vrfs()->count(),
             'cef' => $device->cefSwitching()->count(),
@@ -73,7 +75,7 @@ class RoutingController implements DeviceTab
     public function data(Device $device): array
     {
         return [
-            'routing_tabs' => array_filter($this->tabs)
+            'routing_tabs' => array_filter($this->tabs),
         ];
     }
 }

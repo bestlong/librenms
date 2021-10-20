@@ -15,10 +15,10 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  * @package    LibreNMS
- * @link       http://librenms.org
+ * @link       https://www.librenms.org
  * @copyright  2020 Tony Murray
  * @author     Tony Murray <murraytony@gmail.com>
  */
@@ -37,9 +37,9 @@ class Pulse extends \LibreNMS\OS implements OSPolling
         if (is_numeric($users)) {
             $rrd_def = RrdDefinition::make()->addDataset('users', 'GAUGE', 0);
 
-            $fields = array(
+            $fields = [
                 'users' => $users,
-            );
+            ];
 
             $tags = compact('rrd_def');
             data_update($this->getDeviceArray(), 'pulse_users', $tags, $fields);

@@ -20,10 +20,10 @@ Collection](../Alerting/Rules.md#alert-rules-collection).
 
 ## Setting the ping check to 1 minute
 
-1: If you are using [RRDCached](http://docs.librenms.org/Extensions/RRDCached/), stop the service.
+1: If you are using [RRDCached](../Extensions/RRDCached.md), stop the service.
 
     - This will flush all pending writes so that the rrdstep.php script can change the steps.
-    
+
 2: Change the ping_rrd_step setting in config.php
 
 ```
@@ -44,7 +44,7 @@ ping checks
 *    *    * * *   librenms    /opt/librenms/ping.php >> /dev/null 2>&1
 ```
 
-5: If applicable: Start the [RRDCached](http://docs.librenms.org/Extensions/RRDCached/) service
+5: If applicable: Start the [RRDCached](../Extensions/RRDCached.md) service
 
 
 **NOTE**: If you are using distributed pollers you can restrict a
@@ -80,14 +80,14 @@ $config['ping_rrd_step'] = 30;
 *    *    * * *   librenms    sleep 45 && /opt/librenms/alerts.php >> /dev/null 2>&1
 ```
 
-# Device dependencies
+## Device dependencies
 
 The ping.php script respects device dependencies, but the main poller
 does not (for technical reasons). However, using this script does not
 disable the icmp check in the poller and a child may be reported as
 down before the parent.
 
-# Settings
+## Settings
 
 `ping.php` uses much the same settings as the poller fping with one
 exception: retries is used instead of count.

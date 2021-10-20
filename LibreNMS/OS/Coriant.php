@@ -15,10 +15,10 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  * @package    LibreNMS
- * @link       http://librenms.org
+ * @link       https://www.librenms.org
  * @copyright  2020 Tony Murray
  * @author     Tony Murray <murraytony@gmail.com>
  */
@@ -26,13 +26,12 @@
 namespace LibreNMS\OS;
 
 use App\Models\TnmsneInfo;
+use App\Observers\ModuleModelObserver;
 use LibreNMS\Interfaces\Polling\OSPolling;
-use LibreNMS\Util\ModuleModelObserver;
 use Log;
 
 class Coriant extends \LibreNMS\OS implements OSPolling
 {
-
     public function pollOS()
     {
         echo 'TNMS-NBI-MIB: enmsNETable';
@@ -54,7 +53,7 @@ class Coriant extends \LibreNMS\OS implements OSPolling
                 'neLocation' => $ne['enmsNeLocation'],
                 'neAlarm' => $ne['enmsNeAlarmSeverity'],
                 'neOpMode' => $ne['enmsNeOperatingMode'],
-                'neOpState' => $ne['enmsNeOpState']
+                'neOpState' => $ne['enmsNeOpState'],
             ]);
 
             if ($ne->isDirty()) {
@@ -63,7 +62,6 @@ class Coriant extends \LibreNMS\OS implements OSPolling
             }
             $c_list[] = $index;
         }
-
 
         foreach (TnmsneInfo::where('device_id', $this->getDeviceId())->whereNotIn('neID', $c_list)->get() as $ne) {
             /** @var TnmsneInfo $ne */

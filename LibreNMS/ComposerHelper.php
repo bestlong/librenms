@@ -15,10 +15,10 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
- * @package    LibreNMS
- * @link       http://librenms.org
+ * @link       https://www.librenms.org
+ *
  * @copyright  2016 Tony Murray
  * @author     Tony Murray <murraytony@gmail.com>
  */
@@ -28,12 +28,13 @@ namespace LibreNMS;
 use Composer\Script\Event;
 use LibreNMS\Exceptions\FileWriteFailedException;
 use LibreNMS\Util\EnvHelper;
+use Minishlink\WebPush\VAPID;
 
 class ComposerHelper
 {
     public static function postRootPackageInstall(Event $event)
     {
-        if (!file_exists('.env')) {
+        if (! file_exists('.env')) {
             self::setPermissions();
             self::populateEnv();
         }
@@ -41,7 +42,7 @@ class ComposerHelper
 
     public static function postInstall(Event $event)
     {
-        if (!file_exists('.env')) {
+        if (! file_exists('.env')) {
             self::setPermissions();
         }
 
@@ -50,7 +51,7 @@ class ComposerHelper
 
     public static function preUpdate(Event $event)
     {
-        if (!getenv('FORCE')) {
+        if (! getenv('FORCE')) {
             echo "Running composer update is not advisable.  Please run composer install to update instead.\n";
             echo "If know what you are doing and want to write a new composer.lock file set FORCE=1.\n";
             echo "If you don't know what to do, run: composer install\n";
@@ -62,17 +63,16 @@ class ComposerHelper
     {
         $vendor_dir = $event->getComposer()->getConfig()->get('vendor-dir');
 
-        if (!is_file("$vendor_dir/autoload.php")) {
+        if (! is_file("$vendor_dir/autoload.php")) {
             // checkout vendor from 1.36
             $cmds = [
                 "git checkout 609676a9f8d72da081c61f82967e1d16defc0c4e -- $vendor_dir",
-                "git reset HEAD $vendor_dir"  // don't add vendor directory to the index
+                "git reset HEAD $vendor_dir",  // don't add vendor directory to the index
             ];
 
             self::exec($cmds);
         }
     }
-
 
     /**
      * Initially populate .env file
@@ -95,6 +95,8 @@ class ComposerHelper
 
         try {
             EnvHelper::init();
+            $vapid = VAPID::createVapidKeys();
+
             EnvHelper::writeEnv([
                 'NODE_ID' => uniqid(),
                 'DB_HOST' => $config['db_host'],
@@ -106,6 +108,8 @@ class ComposerHelper
                 'APP_URL' => $config['base_url'],
                 'LIBRENMS_USER' => $config['user'],
                 'LIBRENMS_GROUP' => $config['group'],
+                'VAPID_PUBLIC_KEY' => $vapid['publicKey'],
+                'VAPID_PRIVATE_KEY' => $vapid['privateKey'],
             ]);
         } catch (FileWriteFailedException $exception) {
             echo $exception->getMessage() . PHP_EOL;
@@ -125,11 +129,11 @@ class ComposerHelper
     /**
      * Run a command or array of commands and echo the command and output
      *
-     * @param string|array $cmds
+     * @param  string|array  $cmds
      */
     private static function exec($cmds)
     {
-        $cmd = "set -v\n" . implode(PHP_EOL, (array)$cmds);
+        $cmd = "set -v\n" . implode(PHP_EOL, (array) $cmds);
         passthru($cmd);
     }
 }

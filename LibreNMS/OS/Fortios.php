@@ -15,10 +15,10 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  * @package    LibreNMS
- * @link       http://librenms.org
+ * @link       https://www.librenms.org
  * @copyright  2020 Tony Murray
  * @author     Tony Murray <murraytony@gmail.com>
  */
@@ -47,7 +47,7 @@ class Fortios extends Fortinet implements OSPolling
             $log_rate = snmp_get($this->getDeviceArray(), '.1.3.6.1.4.1.12356.103.2.1.9.0', '-Ovq');
             $log_rate = str_replace(' logs per second', '', $log_rate);
             $rrd_def = RrdDefinition::make()->addDataset('lograte', 'GAUGE', 0, 100000000);
-            $fields = ['lograte' => $log_rate,];
+            $fields = ['lograte' => $log_rate];
             $tags = compact('rrd_def');
             app()->make('Datastore')->put($this->getDeviceArray(), 'fortios_lograte', $tags, $fields);
             $this->enableGraph('fortios_lograte');

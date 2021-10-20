@@ -15,10 +15,10 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
- * @package    LibreNMS
- * @link       http://librenms.org
+ * @link       https://www.librenms.org
+ *
  * @copyright  2017 Tony Murray
  * @author     Tony Murray <murraytony@gmail.com>
  */
@@ -53,7 +53,7 @@ class Arubaos extends OS implements
         $aruba_info = snmp_get_multi($this->getDeviceArray(), [
             'wlsxSwitchRole.0',
             'wlsxSwitchMasterIp.0',
-            'wlsxSwitchLicenseSerialNumber.0'
+            'wlsxSwitchLicenseSerialNumber.0',
         ], '-OQUs', 'WLSX-SWITCH-MIB');
 
         $device->features = $aruba_info[0]['wlsxSwitchRole'] == 'master' ? 'Master Controller' : "Local Controller for {$aruba_info[0]['wlsxSwitchMasterIp']}";
@@ -69,8 +69,9 @@ class Arubaos extends OS implements
     public function discoverWirelessClients()
     {
         $oid = '.1.3.6.1.4.1.14823.2.2.1.1.3.2.0'; // WLSX-SWITCH-MIB::wlsxSwitchTotalNumStationsAssociated.0
+
         return [
-            new WirelessSensor('clients', $this->getDeviceId(), $oid, 'arubaos', 1, 'Client Count')
+            new WirelessSensor('clients', $this->getDeviceId(), $oid, 'arubaos', 1, 'Client Count'),
         ];
     }
 
@@ -87,7 +88,7 @@ class Arubaos extends OS implements
         $sensors = [];
 
         foreach ($data as $key => $value) {
-            $oid = snmp_translate($mib.'::'.$key, 'ALL', 'arubaos', '-On', null);
+            $oid = snmp_translate($mib . '::' . $key, 'ALL', 'arubaos', '-On');
             $value = intval($value);
 
             $low_warn_const = 1; // Default warning threshold = 1 down AP
@@ -112,7 +113,7 @@ class Arubaos extends OS implements
 
             // If AP count is less than twice the default warning threshold,
             // then set the critical threshold to zero.
-            if ($value > 0  && $value <= $low_warn_const * 2) {
+            if ($value > 0 && $value <= $low_warn_const * 2) {
                 $low_limit = 0;
             }
 
@@ -155,12 +156,12 @@ class Arubaos extends OS implements
     public function discoverWirelessPower()
     {
         // instant
-        return $this->discoverInstantRadio('power', 'aiRadioTransmitPower', "Radio %s: Tx Power");
+        return $this->discoverInstantRadio('power', 'aiRadioTransmitPower', 'Radio %s: Tx Power');
     }
 
     protected function decodeChannel($channel)
     {
-        return $channel & 255; // mask off the channel width information
+        return cast_number($channel) & 255; // mask off the channel width information
     }
 
     private function discoverInstantRadio($type, $oid, $desc = 'Radio %s')
@@ -206,7 +207,7 @@ class Arubaos extends OS implements
      * Poll wireless frequency as MHz
      * The returned array should be sensor_id => value pairs
      *
-     * @param array $sensors Array of sensors needed to be polled
+     * @param  array  $sensors  Array of sensors needed to be polled
      * @return array of polled data
      */
     public function pollWirelessFrequency(array $sensors)

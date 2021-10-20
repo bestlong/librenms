@@ -15,10 +15,10 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
- * @package    LibreNMS
- * @link       http://librenms.org
+ * @link       https://www.librenms.org
+ *
  * @copyright  2019 Tony Murray
  * @author     Tony Murray <murraytony@gmail.com>
  */
@@ -38,42 +38,43 @@ class RipeApi extends BaseApi
     /**
      * Get whois info
      *
-     * @param string $resource ASN/IPv4/IPv6
+     * @param  string  $resource  ASN/IPv4/IPv6
      * @return array
+     *
      * @throws ApiException
      */
     public function getWhois($resource)
     {
         return $this->makeApiCall($this->whois_uri, [
             'query' => [
-                'resource' => $resource
-            ]
+                'resource' => $resource,
+            ],
         ]);
     }
 
     /**
      * Get Abuse contact
      *
-     * @param string $resource prefix, single IP address or ASN
+     * @param  string  $resource  prefix, single IP address or ASN
      * @return array|mixed
+     *
      * @throws ApiException
      */
     public function getAbuseContact($resource)
     {
         return $this->makeApiCall($this->abuse_uri, [
             'query' => [
-                'resource' => $resource
-            ]
+                'resource' => $resource,
+            ],
         ]);
     }
 
     /**
-     * @param $uri
-     * @param $options
      * @return array|mixed
+     *
      * @throws ApiException
      */
-    private function makeApiCall($uri, $options)
+    private function makeApiCall(string $uri, array $options)
     {
         try {
             $response = $this->getClient()->get($uri, $options);
@@ -81,7 +82,7 @@ class RipeApi extends BaseApi
             if (isset($response_data['status']) && $response_data['status'] == 'ok') {
                 return $response_data;
             } else {
-                throw new ApiException("RIPE API call failed", $response_data);
+                throw new ApiException('RIPE API call failed', $response_data);
             }
         } catch (RequestException $e) {
             $message = 'RIPE API call to ' . $e->getRequest()->getUri() . ' failed: ';

@@ -37,24 +37,25 @@ if (Auth::user()->hasGlobalAdmin()) {
                         </div>
                         <div class="form-group" title="The type of transport.">
                             <label for='transport-choice' class='col-sm-3 col-md-2 control-label'>Transport type: </label>
-                            <div class="col-sm-3">
-                                <select name='transport-choice' id='transport-choice' class='form-control'>
+                            <div class="col-sm-9 col-md-10">
+                                <select name='transport-choice' id='transport-choice' class='form-control' style="width: auto">
     <?php
 
 // Create list of transport
-    $transport_dir = Config::get('install_dir').'/LibreNMS/Alert/Transport';
-    $transports_list = array();
+    $transport_dir = Config::get('install_dir') . '/LibreNMS/Alert/Transport';
+    $transports_list = [];
     foreach (scandir($transport_dir) as $transport) {
         $transport = strstr($transport, '.', true);
         if (empty($transport)) {
             continue;
         }
-        $transports_list[] = $transport;
+        $class = "\LibreNMS\Alert\Transport\\$transport";
+        $instance = new $class;
+        $transports_list[$transport] = $instance->name();
     }
-    foreach ($transports_list as $transport) {
-        echo '<option value="'.strtolower($transport).'-form">'.$transport.'</option>';
-    }
-    ?>
+    foreach ($transports_list as $transport => $name) {
+        echo '<option value="' . strtolower($transport) . '-form">' . $name . '</option>';
+    } ?>
                                 </select>
                             </div>
                         </div>
@@ -68,20 +69,20 @@ if (Auth::user()->hasGlobalAdmin()) {
     <?php
 
     $switches = []; // store names of bootstrap switches
-    foreach ($transports_list as $transport) {
-        $class = 'LibreNMS\\Alert\\Transport\\'.$transport;
+    foreach ($transports_list as $transport => $name) {
+        $class = 'LibreNMS\\Alert\\Transport\\' . $transport;
 
-        if (!method_exists($class, 'configTemplate')) {
+        if (! method_exists($class, 'configTemplate')) {
             // Skip since support has not been added
             continue;
         }
-    
-        echo '<form method="post" role="form" id="'.strtolower($transport).'-form" class="form-horizontal transport">';
+
+        echo '<form method="post" role="form" id="' . strtolower($transport) . '-form" class="form-horizontal transport">';
         echo csrf_field();
-        echo '<input type="hidden" name="transport-type" id="transport-type" value="'.strtolower($transport).'">';
-   
-        $tmp = call_user_func($class.'::configTemplate');
-    
+        echo '<input type="hidden" name="transport-type" value="' . strtolower($transport) . '">';
+
+        $tmp = call_user_func($class . '::configTemplate');
+
         foreach ($tmp['config'] as $item) {
             if ($item['type'] !== 'hidden') {
                 echo '<div class="form-group" title="' . $item['descr'] . '">';
@@ -137,8 +138,7 @@ if (Auth::user()->hasGlobalAdmin()) {
         echo '</div>';
         echo '</div>';
         echo '</form>';
-    }
-    ?>
+    } ?>
                 </div>
             </div>
         </div>
@@ -174,11 +174,11 @@ if (Auth::user()->hasGlobalAdmin()) {
     <script>
         // Scripts related to editing/updating alert transports
 
-        // Display different form on selection 
-        $("#transport-choice").change(function (){
+        // Display different form on selection
+        $("#transport-choice").on("change", function (){
             $(".transport").hide();
             $("#" + $(this).val()).show().find("input:text").val("");
-         
+
         });
 
         $("#edit-alert-transport").on("show.bs.modal", function(e) {
@@ -197,7 +197,7 @@ if (Auth::user()->hasGlobalAdmin()) {
                         toastr.error("Failed to process alert transport");
                     }
                 });
-            
+
             } else {
             // Resetting to default
                 $("#name").val("");
@@ -205,9 +205,9 @@ if (Auth::user()->hasGlobalAdmin()) {
                 $(".transport").hide();
                 $("#" + $("#transport-choice").val()).show().find("input:text").val("");
                 $("#is_default").bootstrapSwitch('state', false);
-                
+
                 // Turn on all switches in form
-                var switches = <?php echo json_encode($switches);?>;
+                var switches = <?php echo json_encode($switches); ?>;
                 $.each(switches, function(name, state) {
                     $("input[name="+name+"]").bootstrapSwitch('state', state);
                 });
@@ -223,7 +223,7 @@ if (Auth::user()->hasGlobalAdmin()) {
             $("#is_default").bootstrapSwitch('state', transport.is_default);
             $(".transport").hide();
             transport_form.show().find("input:text").val("");
-             
+
             // Populate the field values
             transport.details.forEach(function(config) {
                 var $field = transport_form.find("#" + config.name);
@@ -235,7 +235,7 @@ if (Auth::user()->hasGlobalAdmin()) {
             });
         }
 
-        $(".btn-oauth").click(function (e) {
+        $(".btn-oauth").on("click", function (e) {
             this.href = $(this).data('base-url') + '%26id=' + $("#transport_id").val();
         });
 
@@ -246,7 +246,7 @@ if (Auth::user()->hasGlobalAdmin()) {
             //Combine form data (general and transport specific)
             data = $("form.transports-form").serializeArray();
             data = data.concat($("#" + $("#transport-choice").val()).serializeArray());
-            
+
             if (data !== null) {
                 //post data to ajax form
                 $.ajax({
@@ -281,7 +281,7 @@ if (Auth::user()->hasGlobalAdmin()) {
         });
 
         // Delete the alert transport
-        $("#remove-alert-transport").click('', function(event) {
+        $("#remove-alert-transport").on("click", function(event) {
             event.preventDefault();
             var transport_id = $("#delete_transport_id").val();
             $.ajax({

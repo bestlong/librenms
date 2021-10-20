@@ -1,10 +1,5 @@
-<div class="row">
-    <div class="col-sm-12">
-        <span id="message"></span>
-    </div>
-</div>
 <div class="table-responsive">
-    <table id="alertlog-stats_{{ $id }}" class="table table-hover table-condensed table-striped">
+    <table id="alertlog-stats_{{ $id }}" class="table table-hover table-condensed table-striped" data-ajax="true">
         <thead>
         <tr>
             <th data-column-id="count">Count</th>

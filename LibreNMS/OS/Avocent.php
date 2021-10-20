@@ -15,10 +15,10 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
- * @package    LibreNMS
- * @link       http://librenms.org
+ * @link       https://www.librenms.org
+ *
  * @copyright  2020 Tony Murray
  * @author     Tony Murray <murraytony@gmail.com>
  */
@@ -37,12 +37,12 @@ class Avocent extends OS implements OSDiscovery
         $avocent_tmp = snmp_get_multi_oid($this->getDeviceArray(), [
             'pmProductModel.0',
             'pmSerialNumber.0',
-            'pmFirmwareVersion.0'
+            'pmFirmwareVersion.0',
         ], '-OUQs', 'PM-MIB');
 
         $hardware = $avocent_tmp['pmProductModel.0'] ?? null;
-        $serial   = $avocent_tmp['pmSerialNumber.0'] ?? null;
-        $version  = $avocent_tmp['pmFirmwareVersion.0'] ?? null;
+        $serial = $avocent_tmp['pmSerialNumber.0'] ?? null;
+        $version = $avocent_tmp['pmFirmwareVersion.0'] ?? null;
 
         if (empty($hardware)) {
             if (Str::startsWith($device->sysObjectID, '.1.3.6.1.4.1.10418.16')) {
@@ -50,11 +50,11 @@ class Avocent extends OS implements OSDiscovery
             } elseif (Str::startsWith($device->sysObjectID, '.1.3.6.1.4.1.10418.26')) {
                 $avocent_oid = '.1.3.6.1.4.1.10418.26.2.1';
             }
-            if ($avocent_oid) {
+            if (isset($avocent_oid)) {
                 $avocent_tmp = snmp_get_multi_oid($this->getDeviceArray(), "$avocent_oid.2.0 $avocent_oid.4.0 $avocent_oid.7.0");
                 $hardware = explode(' ', $avocent_tmp["$avocent_oid.2.0"] ?? '', 2)[0] ?: null;
-                $serial   = $avocent_tmp["$avocent_oid.4.0"] ?? null;
-                $version  = $avocent_tmp["$avocent_oid.7.0"] ?? null;
+                $serial = $avocent_tmp["$avocent_oid.4.0"] ?? null;
+                $version = $avocent_tmp["$avocent_oid.7.0"] ?? null;
             }
         }
 

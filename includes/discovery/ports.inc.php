@@ -1,7 +1,9 @@
 <?php
 
 // Build SNMP Cache Array
+use App\Models\PortGroup;
 use LibreNMS\Config;
+use LibreNMS\Util\StringHelpers;
 
 $port_stats = [];
 $port_stats = snmpwalk_cache_oid($device, 'ifDescr', $port_stats, 'IF-MIB');
@@ -12,12 +14,11 @@ $port_stats = snmpwalk_cache_oid($device, 'ifOperStatus', $port_stats, 'IF-MIB')
 
 // Get correct eth0 port status for AirFiber 5XHD devices
 if ($device['os'] == 'airos-af-ltu') {
-            require 'ports/airos-af-ltu.inc.php';
+    require 'ports/airos-af-ltu.inc.php';
 }
 
 // End Building SNMP Cache Array
 d_echo($port_stats);
-
 
 // By default libreNMS uses the ifIndex to associate ports on devices with ports discoverd/polled
 // before and stored in the database. On Linux boxes this is a problem as ifIndexes may be
@@ -39,20 +40,28 @@ $ports_db = $ports_mapped['ports'];
 foreach ($ports_mapped['maps']['ifIndex'] as $ifIndex => $port_id) {
     foreach (['', '-adsl', '-dot3'] as $suffix) {
         $old_rrd_name = "port-$ifIndex$suffix.rrd";
-        $new_rrd_name = getPortRrdName($port_id, ltrim($suffix, '-'));
+        $new_rrd_name = \Rrd::portName($port_id, ltrim($suffix, '-'));
 
-        rrd_file_rename($device, $old_rrd_name, $new_rrd_name);
+        \Rrd::renameFile($device, $old_rrd_name, $new_rrd_name);
     }
 }
 
 // Fill ifAlias for fibrechannel ports
 if ($device['os'] == 'fabos') {
-            require_once 'ports/brocade.inc.php';
+    require_once 'ports/brocade.inc.php';
 }
+
+//Shorten Ekinops Interfaces
+if ($device['os'] == 'ekinops') {
+    require_once 'ports/ekinops.inc.php';
+}
+
+$default_port_group = Config::get('default_port_group');
 
 // New interface detection
 foreach ($port_stats as $ifIndex => $snmp_data) {
     $snmp_data['ifIndex'] = $ifIndex; // Store ifIndex in port entry
+    $snmp_data['ifAlias'] = StringHelpers::inferEncoding($snmp_data['ifAlias']);
 
     // Get port_id according to port_association_mode used for this device
     $port_id = get_port_id($ports_mapped, $snmp_data, $port_association_mode);
@@ -61,9 +70,18 @@ foreach ($port_stats as $ifIndex => $snmp_data) {
         port_fill_missing($snmp_data, $device);
 
         // Port newly discovered?
-        if (!is_array($ports_db[$port_id])) {
+        if (! is_array($ports_db[$port_id])) {
             $snmp_data['device_id'] = $device['device_id'];
             $port_id = dbInsert($snmp_data, 'ports');
+
+            //default Port Group for new Ports defined?
+            if (! empty($default_port_group)) {
+                $port_group = PortGroup::find($default_port_group);
+                if (isset($port_group)) {
+                    $port_group->ports()->attach([$port_id]);
+                }
+            }
+
             $ports[$port_id] = dbFetchRow('SELECT * FROM `ports` WHERE `device_id` = ? AND `port_id` = ?', [$device['device_id'], $port_id]);
             echo 'Adding: ' . $snmp_data['ifName'] . '(' . $ifIndex . ')(' . $port_id . ')';
         } elseif ($ports_db[$port_id]['deleted'] == 1) {

@@ -15,10 +15,10 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
- * @package    LibreNMS
- * @link       http://librenms.org
+ * @link       https://www.librenms.org
+ *
  * @copyright  2018 Tony Murray
  * @author     Tony Murray <murraytony@gmail.com>
  */
@@ -30,14 +30,14 @@ class StringHelpers
     /**
      * Shorten text over 50 chars, if shortened, add ellipsis
      *
-     * @param $string
-     * @param int $max
+     * @param  string  $string
+     * @param  int  $max
      * @return string
      */
     public static function shortenText($string, $max = 30)
     {
         if (strlen($string) > 50) {
-            return substr($string, 0, $max) . "...";
+            return substr($string, 0, $max) . '...';
         }
 
         return $string;
@@ -66,10 +66,11 @@ class StringHelpers
             'opengridscheduler' => 'Open Grid Scheduler',
             'os-updates' => 'OS Updates',
             'php-fpm' => 'PHP-FPM',
-            'pi-hole' => 'pi-hole',
+            'pi-hole' => 'Pi-hole',
             'powerdns' => 'PowerDNS',
             'powerdns-dnsdist' => 'PowerDNS dnsdist',
             'powerdns-recursor' => 'PowerDNS Recursor',
+            'powermon' => 'PowerMon',
             'pureftpd' => 'PureFTPd',
             'rrdcached' => 'RRDCached',
             'sdfsinfo' => 'SDFS info',
@@ -84,11 +85,65 @@ class StringHelpers
 
     /**
      * Convert a camel or studly case string to Title case (with spaces)
-     * @param $string
+     *
+     * @param  string  $string
      * @return string
      */
     public static function camelToTitle($string)
     {
         return ucwords(implode(' ', preg_split('/(?=[A-Z])/', $string)));
+    }
+
+    /**
+     * Sometimes devices store strings as non-unicode strings and return them directly.
+     * NetSnmp parses those as UTF-8, try to convert the string if it contains non-printable ascii characters.
+     *
+     * @param  string|null  $string
+     * @return string
+     */
+    public static function inferEncoding(?string $string): ?string
+    {
+        if (empty($string) || preg_match('//u', $string) || ! function_exists('iconv')) {
+            return $string;
+        }
+
+        $charset = config('app.charset');
+
+        if (($converted = @iconv($charset, 'UTF-8', $string)) !== false) {
+            return (string) $converted;
+        }
+
+        if ($charset !== 'Windows-1252' && ($converted = @iconv('Windows-1252', 'UTF-8', $string)) !== false) {
+            return (string) $converted;
+        }
+
+        if ($charset !== 'CP850' && ($converted = @iconv('CP850', 'UTF-8', $string)) !== false) {
+            return (string) $converted;
+        }
+
+        \Log::debug('Failed to convert string: ' . $string);
+
+        return $string;
+    }
+
+    /**
+     * Generate a class name from a lowercase string containing - or _
+     * Remove - and _ and camel case words
+     *
+     * @param  string  $name  The string to convert to a class name
+     * @param  string|null  $namespace  namespace to prepend to the name for example: LibreNMS\
+     * @return string Class name
+     */
+    public static function toClass(string $name, ?string $namespace = null): string
+    {
+        $pre_format = str_replace(['-', '_'], ' ', $name);
+        $class = str_replace(' ', '', ucwords(strtolower($pre_format)));
+        $class = preg_replace_callback('/^(\d)(.)/', function ($matches) {
+            $numbers = ['Zero', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine'];
+
+            return $numbers[$matches[1]] . strtoupper($matches[2]);
+        }, $class);
+
+        return $namespace . $class;
     }
 }

@@ -15,10 +15,10 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
- * @package    LibreNMS
- * @link       http://librenms.org
+ * @link       https://www.librenms.org
+ *
  * @copyright  2017 Tony Murray
  * @author     Tony Murray <murraytony@gmail.com>
  */
@@ -30,6 +30,7 @@ class ValidationResult
     const FAILURE = 0;
     const WARNING = 1;
     const SUCCESS = 2;
+    const INFO = 3;
 
     private $message;
     private $status;
@@ -39,9 +40,10 @@ class ValidationResult
 
     /**
      * ValidationResult constructor.
-     * @param string $message The message to describe this result
-     * @param int $status The status of this result FAILURE, WARNING, or SUCCESS
-     * @param string $fix a suggested fix to highlight for the user
+     *
+     * @param  string  $message  The message to describe this result
+     * @param  int  $status  The status of this result FAILURE, WARNING, or SUCCESS
+     * @param  string  $fix  a suggested fix to highlight for the user
      */
     public function __construct($message, $status, $fix = null)
     {
@@ -52,8 +54,9 @@ class ValidationResult
 
     /**
      * Create a new ok Validation result
-     * @param string $message The message to describe this result
-     * @param string $fix a suggested fix to highlight for the user
+     *
+     * @param  string  $message  The message to describe this result
+     * @param  string  $fix  a suggested fix to highlight for the user
      * @return ValidationResult
      */
     public static function ok($message, $fix = null)
@@ -63,8 +66,9 @@ class ValidationResult
 
     /**
      * Create a new warning Validation result
-     * @param string $message The message to describe this result
-     * @param string $fix a suggested fix to highlight for the user
+     *
+     * @param  string  $message  The message to describe this result
+     * @param  string  $fix  a suggested fix to highlight for the user
      * @return ValidationResult
      */
     public static function warn($message, $fix = null)
@@ -73,9 +77,21 @@ class ValidationResult
     }
 
     /**
+     * Create a new informational Validation result
+     *
+     * @param  string  $message  The message to describe this result
+     * @return ValidationResult
+     */
+    public static function info($message)
+    {
+        return new self($message, self::INFO);
+    }
+
+    /**
      * Create a new failure Validation result
-     * @param string $message The message to describe this result
-     * @param string $fix a suggested fix to highlight for the user
+     *
+     * @param  string  $message  The message to describe this result
+     * @param  string  $fix  a suggested fix to highlight for the user
      * @return ValidationResult
      */
     public static function fail($message, $fix = null)
@@ -101,7 +117,7 @@ class ValidationResult
 
     public function hasList()
     {
-        return !empty($this->list);
+        return ! empty($this->list);
     }
 
     public function getList()
@@ -119,12 +135,13 @@ class ValidationResult
 
         $this->list_description = $description;
         $this->list = $list;
+
         return $this;
     }
 
     public function hasFix()
     {
-        return !empty($this->fix);
+        return ! empty($this->fix);
     }
 
     public function getFix()
@@ -136,12 +153,13 @@ class ValidationResult
      * The commands (generally) to fix the issue.
      * If there are multiple, use an array.
      *
-     * @param string|array $fix
+     * @param  string|array  $fix
      * @return ValidationResult $this
      */
     public function setFix($fix)
     {
         $this->fix = $fix;
+
         return $this;
     }
 
@@ -154,12 +172,12 @@ class ValidationResult
 
         if (isset($this->fix)) {
             c_echo("\t[%BFIX%n]: \n");
-            foreach ((array)$this->fix as $fix) {
+            foreach ((array) $this->fix as $fix) {
                 c_echo("\t%B$fix%n\n");
             }
         }
 
-        if (!empty($this->list)) {
+        if (! empty($this->list)) {
             echo "\t" . $this->getListDescription() . ":\n";
             $this->printList();
         }
@@ -172,14 +190,14 @@ class ValidationResult
      */
     public static function getStatusText($status)
     {
-        if ($status === self::SUCCESS) {
-            return '%gOK%n';
-        } elseif ($status === self::WARNING) {
-            return '%YWARN%n';
-        } elseif ($status === self::FAILURE) {
-            return '%RFAIL%n';
-        }
-        return 'Unknown';
+        $table = [
+            self::SUCCESS => '%gOK%n',
+            self::WARNING => '%YWARN%n',
+            self::FAILURE => '%RFAIL%n',
+            self::INFO => '%CINFO%n',
+        ];
+
+        return $table[$status] ?? 'Unknown';
     }
 
     public function getListDescription()
@@ -191,8 +209,8 @@ class ValidationResult
      * Print a list of items up to a max amount
      * If over that number, a line will print the total items
      *
-     * @param string $format format as consumed by printf()
-     * @param int $max the max amount of items to print, default 15
+     * @param  string  $format  format as consumed by printf()
+     * @param  int  $max  the max amount of items to print, default 15
      */
     private function printList($format = "\t %s\n", $max = 15)
     {

@@ -18,6 +18,10 @@
         </div>
     @endif
 
+    <x-panel title="{{ __('Push Notifications') }}">
+        <x-notification-subscription-status></x-notification-subscription-status>
+    </x-panel>
+
     @if($can_change_password)
     <x-panel title="{{ __('Change Password') }}">
         <form method="POST" action="{{ route('users.update', [$user->user_id]) }}" class="form-horizontal" role="form">
@@ -159,7 +163,7 @@
             <strong class="green">@lang('Global Viewing Access')</strong>
         @else
             @forelse($devices as $device)
-                @deviceLink($device) <br />
+                <x-device-link :device="$device" /><br />
             @empty
                 <strong class="red">@lang('No access!')</strong>
             @endforelse
@@ -169,7 +173,7 @@
 @endsection
 
 @section('javascript')
-    <script src="{{ asset('js/jquery.qrcode.min.js') }}"></script>
+    <script src="{{ asset('js/jquery-qrcode.min.js') }}"></script>
 @endsection
 
 @section('scripts')
@@ -202,7 +206,7 @@
                 });
             });
 
-        $('.ajax-select').change(function () {
+        $('.ajax-select').on("change", function () {
             var $this = $(this);
             var value = $this.val();
             var pref = $this.data('pref');

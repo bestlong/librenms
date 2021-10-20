@@ -60,9 +60,10 @@ class BashCompletionCommand extends Command
                 if (method_exists($command, 'completeArgument')) {
                     foreach ($input->getArguments() as $name => $value) {
                         if ($current == $value) {
-                            $values = $command->completeArgument($name, $value);
-                            if (!empty($values)) {
+                            $values = $command->completeArgument($name, $value, $previous);
+                            if (! empty($values)) {
                                 echo implode(PHP_EOL, $values);
+
                                 return 0;
                             }
                             break;
@@ -74,7 +75,7 @@ class BashCompletionCommand extends Command
                     $completions = $this->completeOptionValue($option, $current);
                 } else {
                     $completions = collect();
-                    if (!Str::startsWith($previous, '-')) {
+                    if (! Str::startsWith($previous, '-')) {
                         $completions = $this->completeArguments($command_name, $current, end($words));
                     }
                     $completions = $completions->merge($this->completeOption($command_def, $current, $this->getPreviousOptions($words)));
@@ -85,20 +86,21 @@ class BashCompletionCommand extends Command
         \Log::debug('Bash completion values', get_defined_vars());
 
         echo $completions->implode(PHP_EOL);
+
         return 0;
     }
 
     /**
-     * @param string $current
-     * @param string $previous
-     * @param InputDefinition $command_def
+     * @param  string  $current
+     * @param  string  $previous
+     * @param  InputDefinition  $command_def
      * @return false|InputOption
      */
     private function optionExpectsValue($current, $previous, $command_def)
     {
         // handle long option =
         if (Str::startsWith($current, '--') && Str::contains($current, '=')) {
-            list($previous, $current) = explode('=', $current);
+            [$previous, $current] = explode('=', $current);
         }
 
         if (Str::startsWith($previous, '-')) {
@@ -133,7 +135,7 @@ class BashCompletionCommand extends Command
     /**
      * Complete a command
      *
-     * @param string $partial
+     * @param  string  $partial
      * @return \Illuminate\Support\Collection
      */
     private function completeCommand($partial)
@@ -152,15 +154,16 @@ class BashCompletionCommand extends Command
                 return substr($cmd, strpos($cmd, ':') + 1);
             });
         }
+
         return $completions;
     }
 
     /**
      * Complete options for the given command
      *
-     * @param InputDefinition $command
-     * @param string $partial
-     * @param array $prev_options Previous words in the command
+     * @param  InputDefinition  $command
+     * @param  string  $partial
+     * @param  array  $prev_options  Previous words in the command
      * @return \Illuminate\Support\Collection
      */
     private function completeOption($command, $partial, $prev_options)
@@ -189,6 +192,7 @@ class BashCompletionCommand extends Command
                     if (array_intersect($option_flags, $prev_options)) {
                         return [];
                     }
+
                     return $option_flags;
                 })->merge($options);
         }
@@ -205,6 +209,7 @@ class BashCompletionCommand extends Command
                 $split = explode('=', $word, 2); // users may use equals for values
                 $result[] = reset($split);
             }
+
             return $result;
         }, []);
     }
@@ -212,8 +217,8 @@ class BashCompletionCommand extends Command
     /**
      * Complete options with values (if a list is enumerate in the description)
      *
-     * @param InputOption $option
-     * @param string $partial
+     * @param  InputOption  $option
+     * @param  string  $partial
      * @return \Illuminate\Support\Collection
      */
     private function completeOptionValue($option, $partial)
@@ -227,15 +232,16 @@ class BashCompletionCommand extends Command
                     return empty($partial) || Str::startsWith($value, $partial);
                 });
         }
+
         return collect();
     }
 
     /**
      * Complete commands with arguments
      *
-     * @param string $command Name of the current command
-     * @param string $partial
-     * @param string $current_word
+     * @param  string  $command  Name of the current command
+     * @param  string  $partial
+     * @param  string  $current_word
      * @return \Illuminate\Support\Collection
      */
     private function completeArguments($command, $partial, $current_word)

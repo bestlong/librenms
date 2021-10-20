@@ -15,10 +15,10 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  * @package    LibreNMS
- * @link       http://librenms.org
+ * @link       https://www.librenms.org
  * @copyright  2020 Tony Murray
  * @author     Tony Murray <murraytony@gmail.com>
  */
@@ -36,7 +36,7 @@ class Jetdirect extends \LibreNMS\OS\Shared\Printer
 
         $info = $this->parseDeviceId(snmp_get($this->getDeviceArray(), '.1.3.6.1.4.1.11.2.3.9.1.1.7.0', '-OQv'));
         $hardware = $info['MDL'] ?? $info['MODEL'] ?? $info['DES'] ?? $info['DESCRIPTION'];
-        if (!empty($hardware)) {
+        if (! empty($hardware)) {
             $hardware = str_ireplace([
                 'HP ',
                 'Hewlett-Packard ',

@@ -19,10 +19,10 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
- * @package    LibreNMS
- * @link       http://librenms.org
+ * @link       https://www.librenms.org
+ *
  * @copyright  2020 KanREN, Inc
  * @author     Heath Barnhart <hbarnhart@kanren.net>
  */
@@ -34,19 +34,17 @@ use App\Models\OspfPort;
 use App\Models\Port;
 use LibreNMS\Snmptrap\Dispatcher;
 use LibreNMS\Snmptrap\Trap;
-use Log;
 
 class OspfIfStateChangeTest extends SnmpTrapTestCase
 {
     //Test OSPF interface state down
     public function testOspfIfDown()
     {
-        $device = factory(Device::class)->create();
-        $port = factory(Port::class)->make(['ifAdminStatus' => 'up', 'ifOperStatus' => 'up']);
-
+        $device = Device::factory()->create(); /** @var Device $device */
+        $port = Port::factory()->make(['ifAdminStatus' => 'up', 'ifOperStatus' => 'up']); /** @var Port $port */
         $device->ports()->save($port);
 
-        $ospfIf = factory(OspfPort::class)->make(['port_id' => $port->port_id, 'ospfIfState' => 'designatedRouter']);
+        $ospfIf = OspfPort::factory()->make(['port_id' => $port->port_id, 'ospfIfState' => 'designatedRouter']); /** @var OspfPort $ospfIf */
         $device->ospfPorts()->save($ospfIf);
 
         $trapText = "$device->hostname
@@ -74,12 +72,11 @@ SNMPv2-MIB::snmpTrapEnterprise.0 JUNIPER-CHASSIS-DEFINES-MIB::jnxProductNameSRX2
     //Test OSPF interface state DesignatedRouter
     public function testOspfIfDr()
     {
-        $device = factory(Device::class)->create();
-        $port = factory(Port::class)->make(['ifAdminStatus' => 'up', 'ifOperStatus' => 'up']);
-
+        $device = Device::factory()->create(); /** @var Device $device */
+        $port = Port::factory()->make(['ifAdminStatus' => 'up', 'ifOperStatus' => 'up']); /** @var Port $port */
         $device->ports()->save($port);
 
-        $ospfIf = factory(OspfPort::class)->make(['port_id' => $port->port_id, 'ospfIfState' => 'down']);
+        $ospfIf = OspfPort::factory()->make(['port_id' => $port->port_id, 'ospfIfState' => 'down']); /** @var OspfPort $ospfIf */
         $device->ospfPorts()->save($ospfIf);
 
         $trapText = "$device->hostname
@@ -107,12 +104,11 @@ SNMPv2-MIB::snmpTrapEnterprise.0 JUNIPER-CHASSIS-DEFINES-MIB::jnxProductNameSRX2
     //Test OSPF interface state backupDesignatedRouter
     public function testOspfIfBdr()
     {
-        $device = factory(Device::class)->create();
-        $port = factory(Port::class)->make(['ifAdminStatus' => 'up', 'ifOperStatus' => 'up']);
-
+        $device = Device::factory()->create(); /** @var Device $device */
+        $port = Port::factory()->make(['ifAdminStatus' => 'up', 'ifOperStatus' => 'up']); /** @var Port $port */
         $device->ports()->save($port);
 
-        $ospfIf = factory(OspfPort::class)->make(['port_id' => $port->port_id, 'ospfIfState' => 'down']);
+        $ospfIf = OspfPort::factory()->make(['port_id' => $port->port_id, 'ospfIfState' => 'down']); /** @var OspfPort $ospfIf */
         $device->ospfPorts()->save($ospfIf);
 
         $trapText = "$device->hostname
@@ -140,12 +136,11 @@ SNMPv2-MIB::snmpTrapEnterprise.0 JUNIPER-CHASSIS-DEFINES-MIB::jnxProductNameSRX2
     //Test OSPF interface state otherDesignatedRouter
     public function testOspfIfOdr()
     {
-        $device = factory(Device::class)->create();
-        $port = factory(Port::class)->make(['ifAdminStatus' => 'up', 'ifOperStatus' => 'up']);
-
+        $device = Device::factory()->create(); /** @var Device $device */
+        $port = Port::factory()->make(['ifAdminStatus' => 'up', 'ifOperStatus' => 'up']); /** @var Port $port */
         $device->ports()->save($port);
 
-        $ospfIf = factory(OspfPort::class)->make(['port_id' => $port->port_id, 'ospfIfState' => 'down']);
+        $ospfIf = OspfPort::factory()->make(['port_id' => $port->port_id, 'ospfIfState' => 'down']); /** @var OspfPort $ospfIf */
         $device->ospfPorts()->save($ospfIf);
 
         $trapText = "$device->hostname
@@ -173,12 +168,11 @@ SNMPv2-MIB::snmpTrapEnterprise.0 JUNIPER-CHASSIS-DEFINES-MIB::jnxProductNameSRX2
     //Test OSPF interface state pointToPoint
     public function testOspfIfPtp()
     {
-        $device = factory(Device::class)->create();
-        $port = factory(Port::class)->make(['ifAdminStatus' => 'up', 'ifOperStatus' => 'up']);
-
+        $device = Device::factory()->create(); /** @var Device $device */
+        $port = Port::factory()->make(['ifAdminStatus' => 'up', 'ifOperStatus' => 'up']); /** @var Port $port */
         $device->ports()->save($port);
 
-        $ospfIf = factory(OspfPort::class)->make(['port_id' => $port->port_id, 'ospfIfState' => 'down']);
+        $ospfIf = OspfPort::factory()->make(['port_id' => $port->port_id, 'ospfIfState' => 'down']); /** @var OspfPort $ospfIf */
         $device->ospfPorts()->save($ospfIf);
 
         $trapText = "$device->hostname
@@ -206,12 +200,11 @@ SNMPv2-MIB::snmpTrapEnterprise.0 JUNIPER-CHASSIS-DEFINES-MIB::jnxProductNameSRX2
     //Test OSPF interface state waiting
     public function testOspfIfWait()
     {
-        $device = factory(Device::class)->create();
-        $port = factory(Port::class)->make(['ifAdminStatus' => 'up', 'ifOperStatus' => 'up']);
-
+        $device = Device::factory()->create(); /** @var Device $device */
+        $port = Port::factory()->make(['ifAdminStatus' => 'up', 'ifOperStatus' => 'up']); /** @var Port $port */
         $device->ports()->save($port);
 
-        $ospfIf = factory(OspfPort::class)->make(['port_id' => $port->port_id, 'ospfIfState' => 'designatedRouter']);
+        $ospfIf = OspfPort::factory()->make(['port_id' => $port->port_id, 'ospfIfState' => 'designatedRouter']); /** @var OspfPort $ospfIf */
         $device->ospfPorts()->save($ospfIf);
 
         $trapText = "$device->hostname
@@ -239,12 +232,11 @@ SNMPv2-MIB::snmpTrapEnterprise.0 JUNIPER-CHASSIS-DEFINES-MIB::jnxProductNameSRX2
     //Test OSPF interface state loopback
     public function testOspfIfLoop()
     {
-        $device = factory(Device::class)->create();
-        $port = factory(Port::class)->make(['ifAdminStatus' => 'up', 'ifOperStatus' => 'up']);
-
+        $device = Device::factory()->create(); /** @var Device $device */
+        $port = Port::factory()->make(['ifAdminStatus' => 'up', 'ifOperStatus' => 'up']); /** @var Port $port */
         $device->ports()->save($port);
 
-        $ospfIf = factory(OspfPort::class)->make(['port_id' => $port->port_id, 'ospfIfState' => 'designatedRouter']);
+        $ospfIf = OspfPort::factory()->make(['port_id' => $port->port_id, 'ospfIfState' => 'designatedRouter']); /** @var OspfPort $ospfIf */
         $device->ospfPorts()->save($ospfIf);
 
         $trapText = "$device->hostname

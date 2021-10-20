@@ -15,21 +15,27 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  * @package    LibreNMS
- * @link       http://librenms.org
+ * @link       https://www.librenms.org
  * @copyright  2020 Tony Murray
  * @author     Tony Murray <murraytony@gmail.com>
  */
 
 namespace LibreNMS\OS;
 
+use Illuminate\Support\Str;
 use LibreNMS\Interfaces\Polling\OSPolling;
 use LibreNMS\RRD\RrdDefinition;
 
 class Panos extends \LibreNMS\OS implements OSPolling
 {
+    private $validNetBufferMemory = [
+        'Packet Descriptors',
+        'Packet Buffers',
+    ];
+
     public function pollOS()
     {
         $data = snmp_get_multi($this->getDeviceArray(), [
@@ -39,7 +45,7 @@ class Panos extends \LibreNMS\OS implements OSPolling
             'panSessionActiveICMP.0',
             'panSessionActiveSslProxy.0',
             'panSessionSslProxyUtilization.0',
-            'panGPGWUtilizationActiveTunnels.0'
+            'panGPGWUtilizationActiveTunnels.0',
         ], '-OQUs', 'PAN-COMMON-MIB');
 
         if (is_numeric($data[0]['panSessionActive'])) {
@@ -132,5 +138,12 @@ class Panos extends \LibreNMS\OS implements OSPolling
 
             $this->enableGraph('panos_activetunnels');
         }
+    }
+
+    protected function memValid($storage)
+    {
+        return $storage['hrStorageType'] == 'hrStorageOther'
+            && Str::contains($storage['hrStorageDescr'], $this->validNetBufferMemory)
+            || parent::memValid($storage);
     }
 }

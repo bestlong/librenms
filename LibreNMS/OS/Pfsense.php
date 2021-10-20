@@ -15,10 +15,10 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  * @package    LibreNMS
- * @link       http://librenms.org
+ * @link       https://www.librenms.org
  * @copyright  2020 Tony Murray
  * @author     Tony Murray <murraytony@gmail.com>
  */
@@ -43,7 +43,7 @@ class Pfsense extends Unix implements OSPolling
             'pfCounterFragment.0',
             'pfCounterShort.0',
             'pfCounterNormalize.0',
-            'pfCounterMemDrop.0'
+            'pfCounterMemDrop.0',
         ], '-OQUs', 'BEGEMOT-PF-MIB');
 
         if (is_numeric($oids[0]['pfStateTableCount'])) {

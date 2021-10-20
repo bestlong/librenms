@@ -15,10 +15,10 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
- * @package    LibreNMS
- * @link       http://librenms.org
+ * @link       https://www.librenms.org
+ *
  * @copyright  2018 Tony Murray
  * @author     Tony Murray <murraytony@gmail.com>
  */
@@ -41,7 +41,7 @@ class Sgos extends OS implements ProcessorDiscovery
     {
         $data = snmpwalk_group($this->getDeviceArray(), 'sgProxyCpuCoreBusyPerCent', 'BLUECOAT-SG-PROXY-MIB');
 
-        $processors = array();
+        $processors = [];
         $count = 1;
         foreach ($data as $index => $entry) {
             $processors[] = Processor::discover(
@@ -56,7 +56,6 @@ class Sgos extends OS implements ProcessorDiscovery
 
             $count++;
         }
-
 
         return $processors;
     }

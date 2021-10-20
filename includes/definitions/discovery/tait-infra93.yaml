@@ -1,5 +1,9 @@
 mib: TAIT-INFRA93SERIES-MIB
 modules:
+    os:
+        sysDescr_regex: '/Tait Communications, (?<hardware>[^,]+),/'
+        version: TAIT-INFRA93SERIES-MIB::rctInfoFirmwareVersion.0
+        serial: TAIT-INFRA93SERIES-MIB::rctInfoSerialNumber.0
     sensors:
         state:
             data:
@@ -1074,6 +1078,7 @@ modules:
                     value: paTxOutputForwardPower
                     num_oid: '.1.3.6.1.4.1.3570.2.2.2.1.2.3.2.1.{{ $index }}'
                     descr: 'PA output (W)'
+                    entPhysicalIndex: '130{{ $index }}'
                     index: 'paTxOutputForwardPower.{{ $index }}'
                     group: Power Amplifier
         count:
@@ -1120,5 +1125,6 @@ modules:
                     value: rctTemperatureBoard
                     num_oid: '.1.3.6.1.4.1.3570.2.2.2.1.2.2.6.1.{{ $index }}'
                     descr: 'Reciter Temperature (C)'
+                    entPhysicalIndex: '120{{ $index }}'
                     index: 'rctTemperatureBoard.{{ $index }}'
                     group: Reciter

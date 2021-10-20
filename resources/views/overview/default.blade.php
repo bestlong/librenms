@@ -94,6 +94,19 @@
                             </div>
                         </form>
                     </div>
+                    @if (count($user_list) and auth()->user()->isAdmin())
+                    <div class="btn-group btn-lg" style="margin-top:5px;position:absolute;right:0px;">
+                        <div class="btn-group">
+                        <select class="form-control" id="dashboard_copy_target" name="dashboard_copy_target" onchange="dashboard_copy_user_select()">
+                            <option value="-1" selected> Copy Dashboard to </option>
+                        @foreach ($user_list as $user)
+                            <option value="{{ $user->user_id }}">{{ $user->username }}</option>
+                        @endforeach
+                        </select>
+                        </div>
+                        <button disabled id="do_copy_dashboard" class="btn btn-primary" onclick="dashboard_copy(this)" data-toggle="tooltip" data-container="body" data-placement="top" title="Copy Dashboard"><i class="fa fa-copy fa-fw"></i></button>
+                    </div>
+                    @endif
                 </div>
             </div>
             <!-- End Dashboard-Settings -->
@@ -153,7 +166,9 @@
 @endsection
 
 @section('javascript')
-<script type="text/javascript" src="js/jquery.gridster.min.js"></script>
+<script src="{{ asset('js/jquery.gridster.min.js?ver=05072021') }}"></script>
+<script src="{{ asset('js/raphael.min.js?ver=05072021') }}"></script>
+<script src="{{ asset('js/justgage.min.js?ver=05072021') }}"></script>
 @endsection
 
 @push('scripts')
@@ -181,6 +196,7 @@
         avoid_overlapped_widgets: true,
         min_cols: 1,
         max_cols: 20,
+        max_rows: 200,
         draggable: {
             handle: 'header, span',
             stop: function(e, ui, $widget) {
@@ -472,10 +488,53 @@
         });
     }
 
+@if (auth()->user()->isAdmin())
+    function dashboard_copy_user_select() {
+        var button_disabled = true;
+        if (document.getElementById("dashboard_copy_target").value > 0) {
+            button_disabled = false;
+        }
+        $("#do_copy_dashboard").prop('disabled', button_disabled);
+    }
+
+    function dashboard_copy(data) {
+        var target_user_id = document.getElementById("dashboard_copy_target").value;
+        var dashboard_id = {{ $dashboard->dashboard_id }};
+        var username = $("#dashboard_copy_target option:selected").text().trim();
+
+        if (target_user_id == -1) {
+            toastr.warning('No target selected to copy Dashboard to');
+        } else {
+            if (! confirm("Do you really want to copy this Dashboard to User '" + username + "'?")) {
+                return;
+            }
+
+            $.ajax({
+                type: 'POST',
+                url: '{{ url('/ajax/form/copy-dashboard') }}',
+                data: {target_user_id: target_user_id, dashboard_id: dashboard_id},
+                dataType: "json",
+                success: function (data) {
+                    if( data.status == "ok" ) {
+                        toastr.success(data.message);
+                    } else {
+                        toastr.error(data.message);
+                    }
+                },
+                error: function(data) {
+                    toastr.error(data.message);
+                }
+            });
+            $("#dashboard_copy_target option:eq(-1)").prop('selected', true);
+            dashboard_copy_user_select();
+        }
+    }
+@endif
+
     function widget_dom(data) {
         dom = '<li id="'+data.user_widget_id+'" data-type="'+data.widget+'" data-settings="0">'+
               '<header class="widget_header"><span id="widget_title_'+data.user_widget_id+'">'+data.title+
-              '</span>'+
+              '</span><span id="widget_title_counter_'+data.user_widget_id+'"></span>'+
               '<span class="fade-edit pull-right">'+
 
                 @if (
@@ -488,7 +547,7 @@
               '</span>'+
               '</header>'+
               '<div class="widget_body" id="widget_body_'+data.user_widget_id+'">'+data.widget+'</div>'+
-              '\<script\>var timeout'+data.user_widget_id+' = grab_data('+data.user_widget_id+','+data.refresh+',\''+data.widget+'\');\<\/script\>'+
+              '\<script\>var timeout'+data.user_widget_id+' = grab_data('+data.user_widget_id+',\''+data.widget+'\');\<\/script\>'+
               '</li>';
 
         if (data.hasOwnProperty('col') && data.hasOwnProperty('row')) {
@@ -508,7 +567,7 @@
         var datas = $(data).serializeArray();
         for( var field in datas ) {
             var name = datas[field].name;
-            if (name.endsWith('[]')) {
+            if (name.substring(name.length - 2, name.length) === '[]') {
                 name = name.slice(0, -2);
                 if (widget_settings[name]) {
                     widget_settings[name].push(datas[field].value);
@@ -524,18 +583,18 @@
             if(this.contains(data)) {
                 widget_id = $(this).parent().attr('id');
                 widget_type = $(this).parent().data('type');
-                $(this).parent().data('settings','0');
+                $(this).parent().data('settings', '0');
             }
         });
-        if( widget_id > 0 && widget_settings != {} ) {
+        if(widget_id > 0 && widget_settings != {}) {
             $.ajax({
                 type: 'PUT',
                 url: '{{ url('/ajax/form/widget-settings/') }}/' + widget_id,
-                data: {settings: widget_settings},
+                data: { settings: widget_settings },
                 dataType: "json",
                 success: function (data) {
                     if( data.status == "ok" ) {
-                        widget_reload(widget_id, widget_type);
+                        widget_reload(widget_id, widget_type, true);
                         toastr.success(data.message);
                     }
                     else {
@@ -550,62 +609,61 @@
     return false;
     }
 
-    function widget_reload(id, data_type) {
-        $("#widget_body_"+id+" .bootgrid-table").bootgrid("destroy");
-        $("#widget_body_"+id+" *").off();
-        var $widget_body = $("#widget_body_"+id);
-        if ($widget_body.parent().data('settings') == 1 ) {
-            settings = 1;
-        } else {
-            settings = 0;
+    function widget_reload(id, data_type, forceDomInject) {
+        const $widget_body = $('#widget_body_' + id);
+        const $widget_bootgrid = $('#widget_body_' + id + ' .bootgrid-table');
+        const settings = $widget_body.parent().data('settings') == 1 ? 1 : 0;
+
+        if (settings === 1 || forceDomInject) {
+            $widget_bootgrid.bootgrid('destroy');
+            $('#widget_body_' + id + ' *').off();
+        } else if ($widget_bootgrid[0] && $widget_bootgrid.data('ajax') === true) {
+            // Check to see if a bootgrid already exists and has ajax reloading enabled.
+            // If so, use bootgrid to refresh the data instead of injecting the DOM in request.
+            return $widget_bootgrid.bootgrid('reload');
         }
+
         $.ajax({
             type: 'POST',
             url: ajax_url + '/dash/' + data_type,
             data: {
                 id: id,
-                dimensions: {x:$widget_body.width(), y:$widget_body.height()},
-                settings:settings
+                dimensions: {x: $widget_body.width(), y: $widget_body.height()},
+                settings: settings
             },
-            dataType: "json",
+            dataType: 'json',
             success: function (data) {
-                var $widget_body = $("#widget_body_"+id);
-                $widget_body.empty();
                 if (data.status === 'ok') {
-                    $("#widget_title_"+id).html(data.title);
-                    $widget_body.html(data.html).parent().data('settings', data.show_settings);
+                    $('#widget_title_' + id).html(data.title);
+                    $widget_body.html(data.html);
+                    $widget_body.parent().data('settings', data.show_settings).data('refresh', data.settings.refresh);
                 } else {
                     $widget_body.html('<div class="alert alert-info">' + data.message + '</div>');
                 }
             },
             error: function (data) {
-                var $widget_body = $("#widget_body_"+id);
-                $widget_body.empty();
-                if (data.responseJSON.error) {
-                    $widget_body.html('<div class="alert alert-info">' + data.responseJSON.error + '</div>');
-                } else {
-                    $widget_body.html('<div class="alert alert-info">{{ __('Problem with backend') }}</div>');
-                }
+                $widget_body.html('<div class="alert alert-info">' + (data.responseJSON.error || '{{ __('Problem with backend') }}') + '</div>');
             }
         });
     }
 
-    function grab_data(id,refresh, data_type) {
-        if( $("#widget_body_"+id).parent().data('settings') == 0 ) {
+    function grab_data(id, data_type) {
+        const $parent = $('#widget_body_' + id).parent();
+
+        if($parent.data('settings') == 0) {
             widget_reload(id, data_type);
         }
-        new_refresh = refresh * 1000;
-        setTimeout(function() {
-            grab_data(id,refresh,data_type);
-        },
-        new_refresh);
+
+        setTimeout(function () {
+            grab_data(id, data_type);
+        }, ($parent.data('refresh') > 0 ? $parent.data('refresh') : 60) * 1000);
     }
+
     $('#new-widget').popover();
 
     @if (empty($dashboard->dashboard_id) && $default_dash == 0)
         $('#dashboard_name').val('Default');
         dashboard_add($('#add_form'));
     @endif
-
 </script>
 @endpush

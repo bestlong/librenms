@@ -9,11 +9,10 @@
  * the source code distribution for details.
  *
  * @package    LibreNMS
- * @link       http://librenms.org
+ * @link       https://www.librenms.org
  * @copyright  2017 Thomas GAGNIERE
  * @author     Thomas GAGNIERE <tgagniere@reseau-concept.com>
  */
-
 
 namespace LibreNMS\OS;
 
@@ -27,8 +26,9 @@ class Zyxelnwa extends Zyxel implements OSDiscovery, WirelessClientsDiscovery
     public function discoverWirelessClients()
     {
         $oid = '.1.3.6.1.4.1.890.1.15.3.5.1.1.2.1'; //ZYXEL-ES-SMI::esMgmt.5.1.1.2.1
-        return array(
-            new WirelessSensor('clients', $this->getDeviceId(), $oid, 'zyxelnwa', 1, 'Clients')
-        );
+
+        return [
+            new WirelessSensor('clients', $this->getDeviceId(), $oid, 'zyxelnwa', 1, 'Clients'),
+        ];
     }
 }

@@ -15,10 +15,10 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  * @package    LibreNMS
- * @link       http://librenms.org
+ * @link       https://www.librenms.org
  * @copyright  2020 Tony Murray
  * @author     Tony Murray <murraytony@gmail.com>
  */
@@ -32,18 +32,17 @@ class Ucos extends \LibreNMS\OS
 {
     public function discoverOS(Device $device): void
     {
-        $device->hardware = snmp_translate($device->sysObjectID, 'CISCO-PRODUCTS-MIB', null, null, $this->getDeviceArray()) ?: null;
-        $device->version = snmp_get($this->getDeviceArray(), 'SYSAPPL-MIB::sysApplInstallPkgVersion.1', '-Oqv') ?: null;
+        parent::discoverOS($device); // yaml
 
         $applist = snmp_walk($this->getDeviceArray(), 'SYSAPPL-MIB::sysApplInstallPkgProductName', '-OQv');
-        if (Str::contains($applist, "Cisco Unified CCX Database")) {
-            $device->features = "UCCX";
-        } elseif (Str::contains($applist, "Cisco CallManager")) {
-            $device->features = "CUCM";
-        } elseif (Str::contains($applist, "Cisco Emergency Responder")) {
-            $device->features = "CER";
-        } elseif (Str::contains($applist, "Connection System Agent")) {
-            $device->features = "CUC";
+        if (Str::contains($applist, 'Cisco Unified CCX Database')) {
+            $device->features = 'UCCX';
+        } elseif (Str::contains($applist, 'Cisco CallManager')) {
+            $device->features = 'CUCM';
+        } elseif (Str::contains($applist, 'Cisco Emergency Responder')) {
+            $device->features = 'CER';
+        } elseif (Str::contains($applist, 'Connection System Agent')) {
+            $device->features = 'CUC';
         }
     }
 }

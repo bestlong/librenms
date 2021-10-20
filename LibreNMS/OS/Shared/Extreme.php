@@ -15,10 +15,10 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  * @package    LibreNMS
- * @link       http://librenms.org
+ * @link       https://www.librenms.org
  * @copyright  2020 Tony Murray
  * @author     Tony Murray <murraytony@gmail.com>
  */
@@ -106,6 +106,7 @@ class Extreme extends \LibreNMS\OS
             '.1.3.6.1.4.1.1916.2.94' => 'SummitWM 200',
             '.1.3.6.1.4.1.1916.2.95' => 'SummitWM 2000',
             '.1.3.6.1.4.1.1916.2.100' => 'Summit x150-24t',
+            '.1.3.6.1.4.1.1916.2.112' => 'Summit x350-48t',
             '.1.3.6.1.4.1.1916.2.114' => 'Summit x650-24x',
             '.1.3.6.1.4.1.1916.2.118' => 'Summit X650-24x(SSns)',
             '.1.3.6.1.4.1.1916.2.120' => 'Summit x650-24x(SS)',

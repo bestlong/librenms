@@ -15,10 +15,10 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  * @package    LibreNMS
- * @link       http://librenms.org
+ * @link       https://www.librenms.org
  * @copyright  2020 Tony Murray
  * @author     Tony Murray <murraytony@gmail.com>
  */
@@ -34,9 +34,9 @@ class Topvision extends \LibreNMS\OS implements OSPolling
     public function discoverOS(Device $device): void
     {
         parent::discoverOS($device); // yaml
-        $device->serial = snmp_getnext($this->getDeviceArray(), ".1.3.6.1.4.1.32285.11.1.1.2.1.1.1.16", "-OQv") ?? null;
+        $device->serial = snmp_getnext($this->getDeviceArray(), '.1.3.6.1.4.1.32285.11.1.1.2.1.1.1.16', '-OQv') ?? null;
         if (empty($device->hardware)) {
-            $device->hardware = snmp_getnext($this->getDeviceArray(), ".1.3.6.1.4.1.32285.11.1.1.2.1.1.1.18", "-OQv") ?? null;
+            $device->hardware = snmp_getnext($this->getDeviceArray(), '.1.3.6.1.4.1.32285.11.1.1.2.1.1.1.18', '-OQv') ?? null;
         }
     }
 

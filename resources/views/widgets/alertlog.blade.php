@@ -1,10 +1,5 @@
-<div class="row">
-    <div class="col-sm-12">
-        <span id="message"></span>
-    </div>
-</div>
 <div class="table-responsive">
-    <table id="alertlog_{{ $id }}" class="table table-hover table-condensed alerts">
+    <table id="alertlog_{{ $id }}" class="table table-hover table-condensed alerts" data-ajax="true">
         <thead>
         <tr>
             <th data-column-id="status" data-sortable="false"></th>
@@ -25,6 +20,7 @@
             return {
                 id: "alertlog",
                 device_id: "",
+                device_group: "{{ $device_group }}",
                 state: '{{ $state }}',
                 min_severity: '{{ $min_severity }}',
             };
